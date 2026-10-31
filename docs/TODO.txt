@@ -1,0 +1,4 @@
+fix rows that Don't have prices
+fix the problem of items that are not scraped
+generalize the script on more emails 
+fix price issue 

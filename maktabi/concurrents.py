@@ -1,13 +1,19 @@
+"""Étape 1 : prix concurrents.
+
+Met à jour prix + disponibilités Mytek / Tunisianet des produits du catalogue,
+découvre les nouveaux produits des catégories (feuille SSC) et écrit le
+fichier du jour data/daily/JJ-MM-AAAA.xlsx.
+"""
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import time
 import re
 import unidecode
-from pathlib import Path
+
+from maktabi import config
 
 # ============== CONFIG ==============
-EXCEL_PATH = r"C:\Users\NESSIM\Desktop\scrapping web\concurrents_final.xlsx"
 SHEET3 = "Sheet3"
 SHEET4 = "Sheet4"
 SHEET5 = "Sheet5"
@@ -468,19 +474,23 @@ def discover_new_products_from_ssc(p3: pd.DataFrame, p4: pd.DataFrame, p5: pd.Da
 
     return p3, p4, p5
 
-# ============== MAIN ==============
-def main():
-    xls_path = Path(EXCEL_PATH)
-    if not xls_path.exists():
-        raise FileNotFoundError(f"Excel introuvable: {EXCEL_PATH}")
+def main(date_str=None):
+    base_excel = config.CATALOGUE_BASE
+    if not base_excel.exists():
+        raise FileNotFoundError(f"Excel introuvable: {base_excel}")
 
-    p3 = pd.read_excel(EXCEL_PATH, sheet_name=SHEET3)
-    p4 = pd.read_excel(EXCEL_PATH, sheet_name=SHEET4)
+    # === Charger le catalogue de référence ===
+    p3 = pd.read_excel(base_excel, sheet_name=SHEET3)
+    p4 = pd.read_excel(base_excel, sheet_name=SHEET4)
     try:
-        p5 = pd.read_excel(EXCEL_PATH, sheet_name=SHEET5)
+        p5 = pd.read_excel(base_excel, sheet_name=SHEET5)
     except ValueError:
         p5 = pd.DataFrame(columns=["produit_id", "attribut_id", "valeur"])
-    ssc = pd.read_excel(EXCEL_PATH, sheet_name=SSC)
+
+    # === Sheet1, Sheet2, SSC sont recopiées telles quelles ===
+    sheet1 = pd.read_excel(base_excel, sheet_name="Sheet1")
+    sheet2 = pd.read_excel(base_excel, sheet_name="Sheet2")
+    ssc    = pd.read_excel(base_excel, sheet_name=SSC)
 
     p3 = ensure_columns(p3)
 
@@ -490,13 +500,25 @@ def main():
     print("\n=== Étape 2 : Découverte & insertion des nouveaux produits depuis SSC ===")
     p3, p4, p5 = discover_new_products_from_ssc(p3, p4, p5, ssc)
 
-    print("\n💾 Sauvegarde dans l'Excel ...")
-    with pd.ExcelWriter(EXCEL_PATH, engine="openpyxl", mode="a", if_sheet_exists="replace") as w:
-        p3.to_excel(w, index=False, sheet_name=SHEET3)
-        p4.to_excel(w, index=False, sheet_name=SHEET4)
-        p5.to_excel(w, index=False, sheet_name=SHEET5)
+    # 🔹 Supprimer la colonne mytek_avant_remise
+    if "mytek_avant_remise" in p3.columns:
+        p3 = p3.drop(columns=["mytek_avant_remise"])
+
+    # 🔹 Nom du fichier basé sur la date du jour
+    new_excel_path = config.daily_file(date_str)
+    new_excel_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"\n💾 Sauvegarde dans un nouveau fichier : {new_excel_path}")
+    with pd.ExcelWriter(new_excel_path, engine="openpyxl", mode="w") as w:
+        sheet1.to_excel(w, index=False, sheet_name="Sheet1")
+        sheet2.to_excel(w, index=False, sheet_name="Sheet2")
+        ssc.to_excel(w,    index=False, sheet_name=SSC)
+        p3.to_excel(w,     index=False, sheet_name=SHEET3)
+        p4.to_excel(w,     index=False, sheet_name=SHEET4)
+        p5.to_excel(w,     index=False, sheet_name=SHEET5)
 
     print("\n✅ Terminé !")
 
+  
 if __name__ == "__main__":
     main()
