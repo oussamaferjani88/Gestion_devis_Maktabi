@@ -1,0 +1,15 @@
+# Identifiants
+.env
+
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+
+# Données générées à chaque exécution (data/catalogue_base.xlsx reste suivi)
+data/daily/
+data/cleaned/
+data/codis/
+data/powerbi/
+*.bak
+~$*
