@@ -1,8 +1,11 @@
 # Gestion devis Maktabi
 
 Projet de gestion de devis développé pour Maktabi. Le pipeline récupère chaque jour
-les prix des concurrents (Mytek, Tunisianet) et du fournisseur Codis, calcule les
+les prix des concurrents et du fournisseur Codis, calcule les
 marges et alimente un rapport Power BI.
+## Architecture
+<img width="6836" height="2174" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/a979416f-0e50-47d0-8ce0-7220a331ff3e" />
+-> tout est automatisé en une seule commande, donc les rapports se mettent à jour sans saisie manuelle. Cela garantit des données fraîches et un gain de temps considérable pour le suivi quotidien des prix.
 
 ## Structure
 
@@ -74,3 +77,13 @@ Les étapes 2 et 3 lisent le fichier produit par l'étape 1 pour la même date.
 Le rapport `reports/powerbi.pbix` lit `data/powerbi/table_modifiee.xlsx`.
 Si le rapport pointe encore vers un ancien chemin : Power BI Desktop →
 Transformer les données → Paramètres de la source de données → Changer de source.
+## Sorties 
+<img width="1280" height="713" alt="capture1" src="https://github.com/user-attachments/assets/60327f78-fc0e-4eb8-86d9-0430b111736f" />
+on repère immédiatement les produits vendus presque à perte, comme les EcoTank, pour réajuster leur prix. On identifie aussi les produits à forte marge, comme les imprimantes de ticket et les scanners, que l’on peut mettre en avant.
+<img width="1280" height="727" alt="capture2" src="https://github.com/user-attachments/assets/fb37b834-bd8d-4124-911c-84342ea625de" />
+on visualise l’écart entre prix de vente et prix d’achat, donc la marge brute en valeur. On peut aussi renégocier avec Codis sur les produits où l’écart est faible ou nul, par exemple en fin de graphique.
+<img width="1280" height="717" alt="capture3" src="https://github.com/user-attachments/assets/8bd0511b-e52d-41bb-bc7f-0e2497f38b68" />
+on voit sur quels produits Tunisianet réalise de meilleures marges que nous, et on découvre des catégories absentes de notre catalogue (onduleurs, PC gamers). Ce sont des opportunités d’élargissement de gamme.
+
+
+
